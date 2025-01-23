@@ -5,12 +5,26 @@ A shared wallet system built on AO for beacon.
 
 ## Table of Contents
 - [Usage](#usage)
-- [Handlers](#handlers)
-  - [Deploy](#deploy)
+- [Parent Handlers](#parent-handlers)
   - [CreateWallet](#createwallet)
+- [Child Handlers](#child-handlers)
+  - [Deploy](#deploy)
   - [ProposeTransaction](#proposetransaction)
   - [ApproveTransaction](#approvetransaction)
+  - [Token Deposit](#tokendeposit)
+  - [Token Withdraw](#tokenwithdraw)
 
+## Usage
+
+To deploy a shared wallet, you have two options:
+
+1. **Call CreateWallet**: You can deploy a shared wallet by calling the [CreateWallet](#createwallet) handler on the process `cOl4yQx_oLBq1c2ZgXcFm9XI2-KT8xlSYzi1IaW5gCQ`.
+
+2. **Load child.lua**: Alternatively, you can deploy your own process by using the `.load child.lua` command.
+
+    ```sh
+    .load child.lua
+    ```
 
 ## Parent Handlers
 
@@ -107,10 +121,10 @@ The `ApproveTransaction` process allows participants to approve or refuse a prop
     })
     ```
 
-## tokenDeposit 
+### tokenDeposit 
 
 Resposible for handling token deposits to the wallet. Will add to the `tokens` table accordingly.
 
-## tokenWithdraw
+### tokenWithdraw
 
 Responsible for handling token withdrawals from the wallet. Will subtract from the `tokens` table accordingly.
