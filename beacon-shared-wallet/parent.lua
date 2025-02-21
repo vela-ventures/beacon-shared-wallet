@@ -29,10 +29,30 @@ Handlers.prepend("deploy", "Deploy", function(msg)
 
     local walletName = msg.Tags.WalletName
     local threshold = msg.Tags.Threshold
-    local participants = json.decode(msg.Tags.Participants)
+    local participantsJson = msg.Tags.Participants
+
+    -- Validate threshold
+    local thresholdNumber = tonumber(threshold)
+    if not thresholdNumber or thresholdNumber <= 0 then
+        msg.reply({ Data = "Invalid threshold value" })
+        return
+    end
+
+    -- Validate participants JSON
+    local participants = json.decode(participantsJson)
+    if not participants then
+        msg.reply({ Data = "Invalid participants JSON" })
+        return
+    end
+
+    -- Validate threshold is not more than the number of participants
+    if thresholdNumber > #participants then
+        msg.reply({ Data = "Threshold cannot be more than the number of participants" })
+        return
+    end
 
     WalletName = walletName
-    Threshold = tonumber(threshold)
+    Threshold = thresholdNumber
     Participants = participants
     Deployer = msg.From
 
@@ -292,19 +312,30 @@ local mu = "fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY"
 
 function register(msg)
     local walletName = msg.Tags.WalletName
-    local participants = msg.Tags.Participants
+    local participantsJson = msg.Tags.Participants
     local threshold = msg.Tags.Threshold
 
     assert(walletName, "Name is missing")
-    assert(participants, "Participants are missing")
+    assert(participantsJson, "Participants are missing")
     assert(threshold, "Threshold is missing")
+
+    -- Validate threshold
+    local thresholdNumber = tonumber(threshold)
+    assert(thresholdNumber and thresholdNumber > 0, "Invalid threshold value")
+
+    -- Validate participants JSON
+    local participants = json.decode(participantsJson)
+    assert(participants, "Invalid participants JSON")
+
+    -- Validate threshold is not more than the number of participants
+    assert(thresholdNumber <= #participants, "Threshold cannot be more than the number of participants")
 
     local id = msg.Id
     local wallet = {
         id = id,
         walletName = walletName,
         participants = participants,
-        threshold = threshold,
+        threshold = thresholdNumber,
         deployer = msg.From
     }
 
@@ -314,28 +345,41 @@ function register(msg)
 
     local processId = process['Process']
 
-    ao.send({
-        Target = processId,
-        Tags = {
-            Action = "Eval",
-        },
-        Data = WALLET_TEMPLATE
-    })
+    local success, err = pcall(function()
+        ao.send({
+            Target = processId,
+            Tags = {
+                Action = "Eval",
+            },
+            Data = WALLET_TEMPLATE
+        })
 
-    print(Receive({Action = "Info"}).Data)
+        local infoResponse = Receive({ Action = "Info" })
+        if not infoResponse or not infoResponse.Data then
+            error("Failed to receive wallet info")
+        end
 
-    print("Deploying")
+        print(infoResponse.Data)
 
-    ao.send({
-        Target = processId,
-        Tags = {
-            Action = "Deploy",
-            WalletName = walletName,
-            Participants = participants,
-            Threshold = threshold,
-            Deployer = msg.From
-        }
-    })
+        print("Deploying")
+
+        ao.send({
+            Target = processId,
+            Tags = {
+                Action = "Deploy",
+                WalletName = walletName,
+                Participants = participantsJson,
+                Threshold = threshold,
+                Deployer = msg.From
+            }
+        })
+    end)
+
+    if not success then
+        msg.reply({ Data = "Failed to deploy wallet: " .. err })
+        return
+    end
+
     wallet.processId = processId
 
     print("Deployed")

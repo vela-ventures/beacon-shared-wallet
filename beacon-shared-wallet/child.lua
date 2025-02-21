@@ -26,10 +26,30 @@ Handlers.prepend("deploy", "Deploy", function(msg)
 
     local walletName = msg.Tags.WalletName
     local threshold = msg.Tags.Threshold
-    local participants = json.decode(msg.Tags.Participants)
+    local participantsJson = msg.Tags.Participants
+
+    -- Validate threshold
+    local thresholdNumber = tonumber(threshold)
+    if not thresholdNumber or thresholdNumber <= 0 then
+        msg.reply({ Data = "Invalid threshold value" })
+        return
+    end
+
+    -- Validate participants JSON
+    local participants = json.decode(participantsJson)
+    if not participants then
+        msg.reply({ Data = "Invalid participants JSON" })
+        return
+    end
+
+    -- Validate threshold is not more than the number of participants
+    if thresholdNumber > #participants then
+        msg.reply({ Data = "Threshold cannot be more than the number of participants" })
+        return
+    end
 
     WalletName = walletName
-    Threshold = tonumber(threshold)
+    Threshold = thresholdNumber
     Participants = participants
     Deployer = msg.From
 
