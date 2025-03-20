@@ -102,7 +102,8 @@ Handlers.add(
         Response = json.encode({
             Participants = Participants,
             Threshold = Threshold,
-            Tokens = Tokens
+            Tokens = Tokens,
+            Name = WalletName
         })
     })
 end)
