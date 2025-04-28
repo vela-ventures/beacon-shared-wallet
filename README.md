@@ -128,3 +128,10 @@ Resposible for handling token deposits to the wallet. Will add to the `tokens` t
 ### tokenWithdraw
 
 Responsible for handling token withdrawals from the wallet. Will subtract from the `tokens` table accordingly.
+
+## Testing
+
+You can run unit tests by running the following command in the root directory:
+```
+busted
+```

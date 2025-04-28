@@ -288,7 +288,7 @@ Handlers.add("tokenDeposit", Handlers.utils.hasMatchingTag("Action", "Credit-Not
 
 	if not Tokens[tokenId] then
 		Tokens[tokenId] = balance
-		getTokenInformation(tokenId)
+		-- getTokenInformation(tokenId)
 	else
 		Tokens[tokenId] = Tokens[tokenId] + msg.Tags.Quantity
 	end
